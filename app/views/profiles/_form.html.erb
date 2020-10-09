@@ -30,7 +30,19 @@
     <%= form.label :user_id %>
     <%= form.number_field :user_id %>
   </div>
+  
 
+
+  <% @rooms.each do |room| %>
+  <div class="field">
+   <%= room.room_name %>
+  <% if room.id == @room_id&.room_id then %>
+  <%= check_box_tag 'room_ids[]', room.id ,checked:true-%>
+  <% else %>
+  <%= check_box_tag 'room_ids[]', room.id -%>
+  <% end %>
+  <%end %>
+  </div>
   <div class="actions">
     <%= form.submit %>
   </div>

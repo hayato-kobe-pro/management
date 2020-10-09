@@ -1,10 +1,14 @@
 class ProfilesController < ApplicationController
   before_action :set_profile, only: [:show, :edit, :update, :destroy]
+  before_action :authenticate_user!
 
   # GET /profiles
   # GET /profiles.json
   def index
     @profiles = Profile.all
+    id = Profile.find_or_create_by(:user_id => current_user.id)
+    @relation = Relation.find_by(user_id: id)
+    print(@relation)
   end
 
   # GET /profiles/1
@@ -14,11 +18,22 @@ class ProfilesController < ApplicationController
 
   # GET /profiles/new
   def new
-    @profile = Profile.new
+    @profile = Profile
+    @profile = Profile.find_or_create_by(:user_id => current_user.id)
+    redirect_to edit_profile_url(@profile)
+    @relation = Relation.new
   end
 
   # GET /profiles/1/edit
   def edit
+    @rooms = Room.all
+    @relations = Relation.all
+    num = params[:id]
+    @flg = true
+    @room_id = Relation.find_by(user_id: num)
+    if @profile.user_id != current_user.id
+      raise ActionController::RoutingError.new("Not authorized")
+    end
   end
 
   # POST /profiles
@@ -39,13 +54,21 @@ class ProfilesController < ApplicationController
 
   # PATCH/PUT /profiles/1
   # PATCH/PUT /profiles/1.json
-  def update
+  def update  
+    @relation = Relation.new
+    @profile.update(profile_params)
     respond_to do |format|
-      if @profile.update(profile_params)
+      if !params[:room_ids].nil? 
+        room_id = params[:room_ids][0]
+        user_id  = params[:id]
+        if !Relation.find_by(user_id: user_id).nil? 
+          Relation.find_by(user_id).destroy
+        end
+        @relation.update({ "room_id" => room_id, "user_id" => user_id })
         format.html { redirect_to @profile, notice: 'Profile was successfully updated.' }
         format.json { render :show, status: :ok, location: @profile }
       else
-        format.html { render :edit }
+        format.html { redirect_to edit_profile_url(@profile) }
         format.json { render json: @profile.errors, status: :unprocessable_entity }
       end
     end
