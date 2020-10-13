@@ -20,7 +20,7 @@ class ProfilesController < ApplicationController
   def new
     @profile = Profile
     @profile = Profile.find_or_create_by(:user_id => current_user.id)
-    redirect_to edit_profile_url(@profile)
+    redirect_to edit_profile_url(@profile)  
     @relation = Relation.new
   end
 
